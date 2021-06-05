@@ -1,13 +1,19 @@
+import React from 'react';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import './App.css';
 import Chat from './components/Chat';
+import WebSocketContext from './context/socket-context';
 
 function App() {
+  const [socket, setSocket] = React.useState(new WebSocket(`ws://${window.location.hostname}:3000/ws`));
+
   return (
     <div className="App">
-      <Switch>
-        <Route path='/chat' component={Chat} />
-      </Switch>
+      <WebSocketContext.Provider value={{socket, setSocket}}>
+        <Switch>
+          <Route path='/chat' component={Chat} />
+        </Switch>
+      </WebSocketContext.Provider>
     </div>
   );
 }
