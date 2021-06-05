@@ -81,12 +81,18 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	reader(ws)
 }
 
+func testAPI(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, World!")
+	log.Println("TEST ENDPOINT HIT!")
+}
+
 func setupRoutes() {
 	http.HandleFunc("/ws", wsEndpoint)
+	http.HandleFunc("/api/test", testAPI)
 }
 
 func main() {
-	fmt.Println("Hello World")
+	fmt.Println("Server started...")
 	setupRoutes()
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

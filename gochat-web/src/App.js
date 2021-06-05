@@ -1,27 +1,15 @@
-import logo from './logo.svg';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import './App.css';
+import Chat from './components/Chat';
 
 function App() {
   return (
-    
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <div class="bg-gray-300 w-3/5 mx-4 my-2 p-2 rounded-lg">Tailwind test</div>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          React
-        </a>
-      </header>
+      <Switch>
+        <Route path='/chat' component={Chat} />
+      </Switch>
     </div>
   );
 }
 
-export default App;
+export default withRouter(App);
