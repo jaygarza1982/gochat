@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+    go-server:
+        container_name: 'go-chat-server'
+        build:
+            context: .
+        volumes: 
+            - ./server:/app
+        ports:
+            - 8080:8080
+    web-server:
+        image: nginx
+        volumes:
+            - ./server:/usr/share/nginx/html
+        ports:
+            - 8050:80
