@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import WebSocketContext from '../../context/socket-context';
 
 const Chat = () => {
-    const { socket, setSocket } = useContext(WebSocketContext);
+    const { socket } = useContext(WebSocketContext);
 
     const [messages, setMessages] = useState([]);
 
@@ -19,7 +19,7 @@ const Chat = () => {
     };
 
     const handleKeyDown = event => {
-        if (event.key === 'Enter') {
+        if (event.key === 'Enter' && event.target.value != '') {
             socket.send(event.target.value);
             event.target.value = '';
         }
@@ -40,8 +40,7 @@ const Chat = () => {
                     messages.map(message => {
                         return (
                             <div
-                            className="w-3/5 mx-4 my-2 p-2
-                            rounded-lg secondary-message"
+                                className="message-secondary secondary-message-color"
                             >
                                 {message}
                             </div>
@@ -49,7 +48,7 @@ const Chat = () => {
                     })
                 }
                 {/* <div className="w-3/5 mx-4 my-2 p-2 rounded-lg secondary-message">Message from other</div>
-                <div className="w-3/5 mx-4 my-2 p-2 rounded-lg primary-message float-right" style={{marginBottom: 70}}>Message from me</div> */}
+                <div className="w-3/5 mx-4 my-2 p-2 rounded-lg primary-message-color float-right" style={{marginBottom: 70}}>Message from me</div> */}
             </div>
 
             <div className="fixed w-full flex justify-between background-color" style={{bottom: 0}}>
@@ -58,12 +57,7 @@ const Chat = () => {
                     style={{margin: 10}}
                     type="text"
                     placeholder="Message..."
-                    className="px-3 py-3 placeholder-blueGray-300
-                    text-blueGray-600 relative
-                    bg-white bg-white
-                    rounded text-sm border-0
-                    shadow outline-none focus:outline-none
-                    focus:ring w-full"
+                    className="text-box"
                 />
             </div>
         </>

@@ -11,12 +11,11 @@ body {
   background-color: #303633;
 }
 
-.primary-message {
-  /* background-color: #61E8E1;  */
+.primary-message-color {
   background-color: #54c3bd;
 }
 
-.secondary-message {
+.secondary-message-color {
   background-color: #d8cd9e;
 }
 
