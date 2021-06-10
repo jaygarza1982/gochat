@@ -1,10 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 
 	"github.com/gorilla/websocket"
@@ -18,58 +16,22 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
+var count int = 0
+
 //We will use this as a set
-var socketsSet = map[*websocket.Conn]bool{}
-
-// define a reader which will listen for
-// new messages being sent to our WebSocket
-// endpoint
-func reader(conn *websocket.Conn) {
-	conn.SetCloseHandler(func(code int, text string) error {
-		textString := fmt.Sprintf("Closing client code %d because %s", code, text)
-
-		delete(socketsSet, conn)
-
-		return errors.New(textString)
-	})
-
-	for {
-		// read in a message
-		messageType, p, err := conn.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		// print out that message for clarity
-		log.Println(string(p))
-
-		//Write to other sockets
-		for socket := range socketsSet {
-			//Don't write to self
-			if socket != conn {
-				socket.WriteMessage(1, p)
-				fmt.Printf("Writing to %d sockets\n", len(socketsSet))
-			}
-		}
-
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
-		}
-	}
-}
+var socketsSet = map[*websocket.Conn]ConnectedUser{}
 
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
-	// upgrade this connection to a WebSocket
-	// connection
+	// Upgrade connection to websocket
 	ws, err := upgrader.Upgrade(w, r, nil)
 
-	// ws.
+	// TODO: assign a username or userId when user logs in
+	count++
+	clientId := fmt.Sprintf("%d", count)
 
-	// Add our current websocket to the sockets array
-	clientId := fmt.Sprintf("%d", rand.Int())
-	socketsSet[ws] = true
-	// sockets = append(sockets, ws)
+	// Add our new user to the sockets map
+	newUser := ConnectedUser{clientId}
+	socketsSet[ws] = newUser
 
 	if err != nil {
 		log.Println(err)
@@ -77,8 +39,8 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("Client %s connected\n", clientId)
 
-	//Listen on this socket forever until it closes
-	reader(ws)
+	// Listen on this socket forever until it closes
+	newUser.Read(ws, &socketsSet)
 }
 
 func testAPI(w http.ResponseWriter, r *http.Request) {
