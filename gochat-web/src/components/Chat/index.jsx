@@ -4,26 +4,34 @@ import { useContext } from 'react';
 import WebSocketContext from '../../context/socket-context';
 
 const Chat = () => {
-    const { socket } = useContext(WebSocketContext);
+    const { socket, setSocket } = useContext(WebSocketContext);
 
     const [messages, setMessages] = useState([]);
 
-    socket.onopen = () => {
-        console.log("Successfully Connected");
-    };
-
-    socket.onmessage = event => {
-        console.log(event.data);
-
-        setMessages([...messages, event.data]);
-    };
-
     const handleKeyDown = event => {
+        // {"SenderId":"2","ReceiverId":"2","MessageText":"test"} 
         if (event.key === 'Enter' && event.target.value != '') {
             socket.send(event.target.value);
             event.target.value = '';
         }
     }
+
+    const onMessage = event => {
+        setMessages([...messages, event.data]);
+    }
+
+    // When our socket is set, setup functions
+    useEffect(() => {
+        if (!socket) return;
+
+        console.log('Setting up socket functions.');
+
+        socket.onopen = () => {
+            console.log('Websocket successfully connected.');
+        };
+    
+        socket.onmessage = onMessage;
+    }, [socket, messages])
 
     useEffect(() => {
         fetch('/api/test').then(resp => {
@@ -37,7 +45,7 @@ const Chat = () => {
         <>
             <div className="messages">
                 {
-                    messages.map(message => {
+                    messages.map((message, index) => {
                         return (
                             <div
                                 className="message-secondary secondary-message-color"
