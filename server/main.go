@@ -26,7 +26,7 @@ var upgrader = websocket.Upgrader{
 var count int = 0
 
 //We will use this as a set
-var socketsSet = map[*websocket.Conn]ConnectedUser{}
+var socketsSet = map[string]ConnectedUser{}
 
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	// Upgrade connection to websocket
@@ -44,8 +44,8 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	clientId := fmt.Sprintf("%d", count)
 
 	// Add our new user to the sockets map
-	newUser := ConnectedUser{clientId}
-	socketsSet[ws] = newUser
+	newUser := ConnectedUser{clientId, ws}
+	socketsSet[clientId] = newUser
 
 	if err != nil {
 		log.Println(err)

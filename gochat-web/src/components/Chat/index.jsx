@@ -24,14 +24,10 @@ const Chat = () => {
     useEffect(() => {
         if (!socket) return;
 
-        console.log('Setting up socket functions.');
-
-        socket.onopen = () => {
-            console.log('Websocket successfully connected.');
-        };
+        console.log('Setting up socket message handler');
     
         socket.onmessage = onMessage;
-    }, [socket, messages])
+    }, [socket, messages]);
 
     useEffect(() => {
         fetch('/api/test').then(resp => {
