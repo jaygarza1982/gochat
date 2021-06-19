@@ -1,14 +1,29 @@
 version: '3'
 
 services:
+
     go-server:
-        container_name: 'go-chat-server'
+        container_name: 'api-gochat'
         build:
             context: .
         volumes: 
             - ./server:/app
         ports:
             - 8080:8080
+
+    postgres:
+        container_name: 'postgres-gochat'
+        image: postgres:13.3-alpine
+        restart: always
+        volumes:
+            - ./postgres:/var/lib/postgresql/data
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_DB: gochat
+            POSTGRES_USER: gochat
+            POSTGRES_PASSWORD: ch4ng3m3p13453
+
     web-server:
         image: nginx
         volumes:
