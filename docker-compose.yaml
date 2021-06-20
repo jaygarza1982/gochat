@@ -10,6 +10,9 @@ services:
             - ./server:/app
         ports:
             - 8080:8080
+        env_file: env.conf
+        depends_on: 
+            - postgres
 
     postgres:
         container_name: 'postgres-gochat'

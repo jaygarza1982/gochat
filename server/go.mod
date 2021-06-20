@@ -1,4 +1,4 @@
-module go-sockets
+module go-chat
 
 go 1.16
 

@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var (
@@ -87,6 +90,17 @@ func setupRoutes() {
 }
 
 func main() {
+	// Database setup
+	dsn := os.Getenv("DB_CONN_STRING")
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+		fmt.Printf("Could not open DB! %v", err.Error())
+	}
+
+	db.AutoMigrate(&User{})
+
+	// Start HTTP server
 	fmt.Println("Server started...")
 	setupRoutes()
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+
+    go-server:
+        container_name: 'api-gochat-test'
+        build:
+            context: .
+        command: go test
+        env_file: env.test.conf
+
+    postgres:
+        container_name: 'postgres-gochat-test'
+        image: postgres:13.3-alpine
+        volumes: 
+            - ./postgres-test:/var/lib/postgresql/data
