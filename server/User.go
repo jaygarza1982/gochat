@@ -19,11 +19,19 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-func checkPassword(password string) bool {
+func (u *User) CheckPassword(db *gorm.DB, password string) bool {
+	// Obtain user from database
+	existing := User{}
+	db.First(&existing, "ID = ?", u.ID)
 
-	return false
-	// err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	// return err == nil
+	// Check password
+	err := bcrypt.CompareHashAndPassword([]byte(existing.PasswordHash), []byte(password))
+
+	if err != nil {
+		fmt.Printf("password is incorrect %v", err.Error())
+	}
+
+	return err == nil
 }
 
 func (u *User) Register(db *gorm.DB, password string) error {
@@ -42,6 +50,20 @@ func (u *User) Register(db *gorm.DB, password string) error {
 
 	create(db, u)
 
+	return nil
+}
+
+// Sends a message to another user
+// The message contains who it is to
+func (u *User) SendMessage(db *gorm.DB, message *UserMessage) {
+	// // Ensure that the message is from us
+	// message.SenderId = strconv.Itoa(u.ID)
+
+	// db.Create(message)
+}
+
+func (u *User) ReadMessages(db *gorm.DB, senderId int) *[]UserMessage {
+	// db.Where("name = ?", "jinzhu").Find(&users)
 	return nil
 }
 

@@ -6,7 +6,7 @@ services:
         container_name: 'api-gochat-test'
         build:
             context: .
-        command: go test
+        command: go test -v
         env_file: env.test.conf
 
     postgres:

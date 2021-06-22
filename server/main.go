@@ -98,7 +98,7 @@ func main() {
 		fmt.Printf("Could not open DB! %v", err.Error())
 	}
 
-	db.AutoMigrate(&User{})
+	db.AutoMigrate(&User{}, &UserMessage{})
 
 	// Start HTTP server
 	fmt.Println("Server started...")
