@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -56,15 +57,17 @@ func (u *User) Register(db *gorm.DB, password string) error {
 // Sends a message to another user
 // The message contains who it is to
 func (u *User) SendMessage(db *gorm.DB, message *UserMessage) {
-	// // Ensure that the message is from us
-	// message.SenderId = strconv.Itoa(u.ID)
+	// Ensure that the message is from us
+	message.SenderId = strconv.Itoa(u.ID)
 
-	// db.Create(message)
+	db.Create(message)
 }
 
-func (u *User) ReadMessages(db *gorm.DB, senderId int) *[]UserMessage {
-	// db.Where("name = ?", "jinzhu").Find(&users)
-	return nil
+func (u *User) ReadMessages(db *gorm.DB, senderId string) *[]UserMessage {
+	userMessages := []UserMessage{}
+	db.Where("receiver_id = ? AND sender_id = ?", strconv.Itoa(u.ID), senderId).Find(&userMessages)
+
+	return &userMessages
 }
 
 func (u *User) CanCreate(rows int64) bool {

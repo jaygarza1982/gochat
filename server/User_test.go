@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/bxcodec/faker"
@@ -17,7 +18,8 @@ func resetDBConnection(t *testing.T) *gorm.DB {
 		t.Errorf(err.Error())
 	}
 
-	db.AutoMigrate(&User{}, &UserMessage{})
+	db.AutoMigrate(&User{})
+	db.AutoMigrate(&UserMessage{})
 
 	// Clear table
 	db.Where("1 = 1").Delete(User{})
@@ -91,5 +93,32 @@ func TestUser_CorrectPassword(t *testing.T) {
 }
 
 func TestUser_SendMessage(t *testing.T) {
+	db := resetDBConnection(t)
 
+	// Fake a user and password
+	user0 := User{}
+	faker.FakeData(&user0)
+	user1 := User{}
+	faker.FakeData(&user1)
+
+	if err := user0.Register(db, "12345"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user1.Register(db, "54321"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+
+	// Send message to user 1
+	userMessage := UserMessage{ReceiverId: strconv.Itoa(user1.ID), MessageText: "Message to user 1"}
+	user0.SendMessage(db, &userMessage)
+
+	// User 1 reads messages
+	user1Messages := user1.ReadMessages(db, strconv.Itoa(user0.ID))
+
+	if (*user1Messages)[0].MessageText != userMessage.MessageText {
+		t.Errorf("user could not read messages")
+	}
+
+	// TODO: Add more users with more messages
+	// TODO: Ensure messages do not "leak" when other users request their own messages
 }
