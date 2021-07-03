@@ -110,7 +110,7 @@ func TestUser_SendMessage(t *testing.T) {
 
 	// Send message to user 1
 	userMessage := UserMessage{ReceiverId: strconv.Itoa(user1.ID), MessageText: "Message to user 1"}
-	user0.SendMessage(db, &userMessage)
+	user0.SendMessage(db, &userMessage, nil)
 
 	// User 1 reads messages
 	user1Messages := user1.ReadMessages(db, strconv.Itoa(user0.ID))

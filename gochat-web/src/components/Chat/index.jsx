@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
@@ -9,10 +10,14 @@ const Chat = () => {
     const [messages, setMessages] = useState([]);
 
     const handleKeyDown = event => {
-        // {"SenderId":"2","ReceiverId":"2","MessageText":"test"} 
         if (event.key === 'Enter' && event.target.value != '') {
-            socket.send(event.target.value);
-            event.target.value = '';
+            axios.post('/api/send-message', {ReceiverId: 'test', MessageText: event.target.value}).then(resp => {
+                console.log('Message sent successfully!');
+
+                event.target.value = '';
+            }).catch(err => {
+                console.log('Could not send user message', err);
+            });
         }
     }
 

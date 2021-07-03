@@ -56,11 +56,16 @@ func (u *User) Register(db *gorm.DB, password string) error {
 
 // Sends a message to another user
 // The message contains who it is to
-func (u *User) SendMessage(db *gorm.DB, message *UserMessage) {
+func (u *User) SendMessage(db *gorm.DB, message *UserMessage, callback func()) {
 	// Ensure that the message is from us
 	message.SenderId = strconv.Itoa(u.ID)
 
 	db.Create(message)
+
+	// Run our optional callback, this could be sending message over a websocket if desired
+	if callback != nil {
+		callback()
+	}
 }
 
 func (u *User) ReadMessages(db *gorm.DB, senderId string) *[]UserMessage {

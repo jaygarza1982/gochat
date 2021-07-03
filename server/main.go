@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,7 +27,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-var count int = 0
+// var count int = 0
 
 //We will use this as a set
 var socketsSet = map[string]ConnectedUser{}
@@ -35,16 +36,17 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	// Upgrade connection to websocket
 	ws, err := upgrader.Upgrade(w, r, nil)
 
-	// TODO: assign a username or userId when user logs in
-	// TODO:
-	// session, _ := store.Get(r, "auth")
+	session, _ := store.Get(r, "auth")
+	clientId := ""
+
 	// Check if username is in our session
-	// if val, ok := session.Values["username"]; ok {
-
-	// }
-
-	count++
-	clientId := fmt.Sprintf("%d", count)
+	if val, ok := session.Values["username"]; ok {
+		fmt.Printf("%v", val)
+		clientId = fmt.Sprintf("%v", val)
+	} else {
+		w.WriteHeader(http.StatusForbidden)
+		w.Write([]byte("401 - User session was not found. Please login first."))
+	}
 
 	// Add our new user to the sockets map
 	newUser := ConnectedUser{clientId, ws}
@@ -66,27 +68,58 @@ func testAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
-	if err := r.ParseForm(); err != nil {
-		fmt.Fprintf(w, "ParseForm() err: %v", err)
-		return
+	type LoginRequest struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
 	}
+
+	var request LoginRequest
+
+	data := json.NewDecoder(r.Body)
+	data.Decode(&request)
 
 	session, _ := store.Get(r, "auth")
 
-	// TODO: Check these from a database
-	username := r.FormValue("username")
-	// password := r.FormValue("password")
+	// TODO: Check username and password from DB
 
 	// Set user as authenticated
-	session.Values["username"] = username
+	session.Values["username"] = request.Username
 	session.Save(r, w)
 }
 
-func setupRoutes() {
+func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("Send message hit")
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "auth")
+		username := ""
+
+		// Check if username is in our session
+		if val, ok := session.Values["username"]; ok {
+			fmt.Printf("Username %v is sending a message\n", val)
+			username = fmt.Sprintf("%v", val)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("401 - User session was not found. Please login first."))
+		}
+
+		var message UserMessage
+
+		data := json.NewDecoder(r.Body)
+		data.Decode(&message)
+
+		user := User{Username: username}
+		user.SendMessage(db, &message, func() {
+			// TODO: Send message over socket
+			fmt.Printf("User send message callback!\n")
+		})
+	}
+}
+
+func setupRoutes(db *gorm.DB) {
 	http.HandleFunc("/ws", wsEndpoint)
 	http.HandleFunc("/api/test", testAPI)
 	http.HandleFunc("/api/login", login)
+	http.HandleFunc("/api/send-message", SendMessage(db))
 }
 
 func main() {
@@ -102,6 +135,6 @@ func main() {
 
 	// Start HTTP server
 	fmt.Println("Server started...")
-	setupRoutes()
+	setupRoutes(db)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
