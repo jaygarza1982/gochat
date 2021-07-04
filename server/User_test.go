@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/bxcodec/faker"
@@ -109,11 +108,11 @@ func TestUser_SendMessage(t *testing.T) {
 	}
 
 	// Send message to user 1
-	userMessage := UserMessage{ReceiverId: strconv.Itoa(user1.ID), MessageText: "Message to user 1"}
+	userMessage := UserMessage{ReceiverId: user1.Username, MessageText: "Message to user 1"}
 	user0.SendMessage(db, &userMessage, nil)
 
 	// User 1 reads messages
-	user1Messages := user1.ReadMessages(db, strconv.Itoa(user0.ID))
+	user1Messages := user1.ReadMessages(db, user0.Username)
 
 	if (*user1Messages)[0].MessageText != userMessage.MessageText {
 		t.Errorf("user could not read messages")

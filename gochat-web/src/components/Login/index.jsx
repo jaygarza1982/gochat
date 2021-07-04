@@ -41,6 +41,7 @@ const Login = props => {
                             id="goChatUsername"
                             name="goChatUsername"
                             type="text"
+                            autoComplete='off'
                             placeholder="Username"
                             onChange={onTextChange}
                         />

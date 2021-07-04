@@ -16,6 +16,7 @@ function App() {
       <WebSocketContext.Provider value={{socket, setSocket}}>
         <MessagesContext.Provider value={{messages, setMessages}}>
           <Switch>
+            <Route path='/' exact component={Login} />
             <Route path='/login' component={Login} />
             <Route path='/chat' component={Chat} />
           </Switch>

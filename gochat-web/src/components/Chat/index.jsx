@@ -51,7 +51,7 @@ const Chat = () => {
                             <div
                                 className="message-secondary secondary-message-color"
                             >
-                                {message}
+                                {JSON.parse(message)?.MessageText}
                             </div>
                         )
                     })

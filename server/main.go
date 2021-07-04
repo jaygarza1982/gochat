@@ -27,8 +27,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 }
 
-// var count int = 0
-
 //We will use this as a set
 var socketsSet = map[string]ConnectedUser{}
 
@@ -64,7 +62,6 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 func testAPI(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, World!")
-	log.Println("TEST ENDPOINT HIT!")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -87,8 +84,24 @@ func login(w http.ResponseWriter, r *http.Request) {
 	session.Save(r, w)
 }
 
+func register(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type RegisterRequest struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+
+		var request RegisterRequest
+
+		data := json.NewDecoder(r.Body)
+		data.Decode(&request)
+
+		user := User{Username: request.Username}
+		user.Register(db, request.Password)
+	}
+}
+
 func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("Send message hit")
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "auth")
 		username := ""
@@ -109,8 +122,8 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		user := User{Username: username}
 		user.SendMessage(db, &message, func() {
-			// TODO: Send message over socket
-			fmt.Printf("User send message callback!\n")
+			// Send our message over the socket
+			socketsSet[message.ReceiverId].Conn.WriteJSON(message)
 		})
 	}
 }
@@ -119,6 +132,7 @@ func setupRoutes(db *gorm.DB) {
 	http.HandleFunc("/ws", wsEndpoint)
 	http.HandleFunc("/api/test", testAPI)
 	http.HandleFunc("/api/login", login)
+	http.HandleFunc("/api/register", register(db))
 	http.HandleFunc("/api/send-message", SendMessage(db))
 }
 
