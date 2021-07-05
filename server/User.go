@@ -22,7 +22,7 @@ func hashPassword(password string) (string, error) {
 func (u *User) CheckPassword(db *gorm.DB, password string) bool {
 	// Obtain user from database
 	existing := User{}
-	db.First(&existing, "ID = ?", u.ID)
+	db.First(&existing, "username = ?", u.Username)
 
 	// Check password
 	err := bcrypt.CompareHashAndPassword([]byte(existing.PasswordHash), []byte(password))

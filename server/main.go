@@ -64,24 +64,31 @@ func testAPI(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, World!")
 }
 
-func login(w http.ResponseWriter, r *http.Request) {
-	type LoginRequest struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+func login(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type LoginRequest struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+
+		var request LoginRequest
+
+		data := json.NewDecoder(r.Body)
+		data.Decode(&request)
+
+		user := User{Username: request.Username}
+		if valid := user.CheckPassword(db, request.Password); valid {
+			// Set user as authenticated
+			session, _ := store.Get(r, "auth")
+			session.Values["username"] = request.Username
+			session.Save(r, w)
+
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("401 - User credentials are incorrect"))
+		}
 	}
-
-	var request LoginRequest
-
-	data := json.NewDecoder(r.Body)
-	data.Decode(&request)
-
-	session, _ := store.Get(r, "auth")
-
-	// TODO: Check username and password from DB
-
-	// Set user as authenticated
-	session.Values["username"] = request.Username
-	session.Save(r, w)
 }
 
 func register(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +104,10 @@ func register(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 		data.Decode(&request)
 
 		user := User{Username: request.Username}
-		user.Register(db, request.Password)
+		if err := user.Register(db, request.Password); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Error in registration."))
+		}
 	}
 }
 
@@ -131,7 +141,7 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 func setupRoutes(db *gorm.DB) {
 	http.HandleFunc("/ws", wsEndpoint)
 	http.HandleFunc("/api/test", testAPI)
-	http.HandleFunc("/api/login", login)
+	http.HandleFunc("/api/login", login(db))
 	http.HandleFunc("/api/register", register(db))
 	http.HandleFunc("/api/send-message", SendMessage(db))
 }
