@@ -20,7 +20,7 @@ function App() {
             <Route path='/' exact component={Login} />
             <Route path='/login' component={Login} />
             <Route path='/register' component={Register} />
-            <Route path='/chat' component={Chat} />
+            <Route path='/chat/:user' component={Chat} />
           </Switch>
         </MessagesContext.Provider>
       </WebSocketContext.Provider>

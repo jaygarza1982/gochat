@@ -2,16 +2,18 @@ import axios from 'axios';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
+import { useParams } from 'react-router-dom';
 import WebSocketContext from '../../context/socket-context';
 
 const Chat = () => {
     const { socket, setSocket } = useContext(WebSocketContext);
 
     const [messages, setMessages] = useState([]);
+    const [receiver, setReceiver] = useState(useParams()?.user);
 
     const handleKeyDown = event => {
         if (event.key === 'Enter' && event.target.value != '') {
-            axios.post('/api/send-message', {ReceiverId: 'test', MessageText: event.target.value}).then(resp => {
+            axios.post('/api/send-message', {ReceiverId: receiver || '', MessageText: event.target.value}).then(resp => {
                 console.log('Message sent successfully!');
 
                 event.target.value = '';
@@ -35,11 +37,8 @@ const Chat = () => {
     }, [socket, messages]);
 
     useEffect(() => {
-        fetch('/api/test').then(resp => {
-            return resp.text();
-        }).then(text => {
-            console.log(text);
-        })
+        //Setup our socket on load
+        setSocket(new WebSocket(`ws://${window.location.hostname}:3000/ws`));
     }, []);
 
     return (

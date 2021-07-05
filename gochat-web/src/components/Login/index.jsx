@@ -19,10 +19,7 @@ const Login = props => {
         axios.post('/api/login', { username: form.goChatUsername, password: form.goChatPassword }).then(resp => {
             console.log(resp);
             if (resp.status === 200) {
-                //Set our websocket now that we are authenticated
-                setSocket(new WebSocket(`ws://${window.location.hostname}:3000/ws`));
-
-                props.history.push('/chat');
+                props.history.push('/chat/test');
             }
         }).catch(err => {
             console.log('Could not send login', err);

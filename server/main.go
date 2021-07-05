@@ -39,7 +39,6 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// Check if username is in our session
 	if val, ok := session.Values["username"]; ok {
-		fmt.Printf("%v", val)
 		clientId = fmt.Sprintf("%v", val)
 	} else {
 		w.WriteHeader(http.StatusForbidden)
@@ -132,6 +131,13 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		user := User{Username: username}
 		user.SendMessage(db, &message, func() {
+			// Ensure the socket exists
+			if _, ok := socketsSet[message.ReceiverId]; !ok {
+				fmt.Printf("Receiver %v not found within sockets\n", message.ReceiverId)
+
+				return
+			}
+
 			// Send our message over the socket
 			socketsSet[message.ReceiverId].Conn.WriteJSON(message)
 		})
