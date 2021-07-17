@@ -8,10 +8,12 @@ import WebSocketContext from '../../context/socket-context';
 const Chat = () => {
     const { socket, setSocket } = useContext(WebSocketContext);
 
-    const [messages, setMessages] = useState([]);
     const [receiver, setReceiver] = useState(useParams()?.user);
+    const [yourMessages, setYourMessages] = useState([]);
+    const [myMessages, setMyMessages] = useState([]);
 
     const handleKeyDown = event => {
+        //TODO: Append to myMessages
         if (event.key === 'Enter' && event.target.value != '') {
             axios.post('/api/send-message', {ReceiverId: receiver || '', MessageText: event.target.value}).then(resp => {
                 console.log('Message sent successfully!');
@@ -24,7 +26,10 @@ const Chat = () => {
     }
 
     const onMessage = event => {
-        setMessages([...messages, event.data]);
+        const { SenderId } = JSON.parse(event.data);
+        
+        //TODO: Only append to their messages
+        SenderId == receiver ? setMyMessages([...myMessages, event.data]) : setYourMessages([...yourMessages, event.data]);
     }
 
     // When our socket is set, setup functions
@@ -34,7 +39,7 @@ const Chat = () => {
         console.log('Setting up socket message handler');
     
         socket.onmessage = onMessage;
-    }, [socket, messages]);
+    }, [socket, yourMessages, myMessages]);
 
     useEffect(() => {
         //Setup our socket on load
@@ -43,20 +48,29 @@ const Chat = () => {
 
     return (
         <>
-            <div className="messages">
-                {
-                    messages.map((message, index) => {
-                        return (
-                            <div
-                                className="message-secondary secondary-message-color"
-                            >
-                                {JSON.parse(message)?.MessageText}
-                            </div>
-                        )
-                    })
-                }
-                {/* <div className="w-3/5 mx-4 my-2 p-2 rounded-lg secondary-message">Message from other</div>
-                <div className="w-3/5 mx-4 my-2 p-2 rounded-lg primary-message-color float-right" style={{marginBottom: 70}}>Message from me</div> */}
+            <div className="chat">
+                <div className="messages yours">
+                    {
+                        yourMessages.map((message, index) => {
+                            return (
+                                <div className="message" key={`${index}-your`}>
+                                    {JSON.parse(message)?.MessageText}
+                                </div>
+                            )
+                        })
+                    }
+                </div>
+                <div className="messages mine">
+                    {
+                        myMessages.map((message, index) => {
+                            return (
+                                <div className="message" key={`${index}-mine`}>
+                                    {JSON.parse(message)?.MessageText}
+                                </div>
+                            )
+                        })
+                    }
+                </div>
             </div>
 
             <div className="fixed w-full flex justify-between background-color" style={{bottom: 0}}>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import './App.css';
 import Chat from './components/Chat';
+import Conversations from './components/Conversations';
 import Login from './components/Login';
 import Register from './components/Register';
 import MessagesContext from './context/messages-context';
@@ -21,6 +22,7 @@ function App() {
             <Route path='/login' component={Login} />
             <Route path='/register' component={Register} />
             <Route path='/chat/:user' component={Chat} />
+            <Route path='/conversations' component={Conversations} />
           </Switch>
         </MessagesContext.Provider>
       </WebSocketContext.Provider>
