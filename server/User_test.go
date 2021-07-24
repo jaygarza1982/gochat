@@ -121,3 +121,34 @@ func TestUser_SendMessage(t *testing.T) {
 	// TODO: Add more users with more messages
 	// TODO: Ensure messages do not "leak" when other users request their own messages
 }
+
+// TODO: Make test with different users and different conversations
+// Ensure that conversations do not "leak" to other users
+// In other words, ensure that conversations are only listed if the user has messages addressed to them
+// from a specific user
+func TestUser_GetConversations(t *testing.T) {
+	db := resetDBConnection(t)
+
+	// Fake a user and password
+	user0 := User{}
+	faker.FakeData(&user0)
+	user1 := User{}
+	faker.FakeData(&user1)
+
+	if err := user0.Register(db, "12345"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user1.Register(db, "54321"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+
+	// Send message to user 1
+	userMessage := UserMessage{ReceiverId: user1.Username, MessageText: "Message to user 1 for convo test"}
+	user0.SendMessage(db, &userMessage, nil)
+
+	conversations := user1.GetConversations(db)
+
+	if conversations[0] != user0.Username {
+		t.Errorf("got error when getting conversations should have %v", user0.Username)
+	}
+}

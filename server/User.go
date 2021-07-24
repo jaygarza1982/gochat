@@ -74,6 +74,28 @@ func (u *User) ReadMessages(db *gorm.DB, senderId string) *[]UserMessage {
 	return &userMessages
 }
 
+// Return all messages that have receiver as the current user
+func (u *User) GetConversations(db *gorm.DB) []string {
+	var usernames []string
+
+	// Get distinct chats where receiver is ours
+	rows, rowError := db.Raw("SELECT DISTINCT sender_id FROM user_messages WHERE receiver_id = ?", u.Username).Rows()
+
+	if rowError != nil {
+		fmt.Printf("Error %v", rowError)
+	}
+
+	// For all rows returned, append data to usernames slice
+	for rows.Next() {
+		var username string
+		rows.Scan(&username)
+
+		usernames = append(usernames, username)
+	}
+
+	return usernames
+}
+
 func (u *User) CanCreate(rows int64) bool {
 	return rows == 0
 }
