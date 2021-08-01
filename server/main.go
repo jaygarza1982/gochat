@@ -110,6 +110,32 @@ func register(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ListConversations(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "auth")
+		username := ""
+
+		// Check if username is in our session
+		if val, ok := session.Values["username"]; ok {
+			fmt.Printf("Username %v is sending a message\n", val)
+			username = fmt.Sprintf("%v", val)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("401 - User session was not found. Please login first."))
+		}
+
+		user := User{Username: username}
+		conversations := user.GetConversations(db)
+
+		if bytes, err := json.Marshal(conversations); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Error in registration."))
+		} else {
+			w.Write(bytes)
+		}
+	}
+}
+
 func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "auth")
@@ -150,6 +176,7 @@ func setupRoutes(db *gorm.DB) {
 	http.HandleFunc("/api/login", login(db))
 	http.HandleFunc("/api/register", register(db))
 	http.HandleFunc("/api/send-message", SendMessage(db))
+	http.HandleFunc("/api/conversations", ListConversations(db))
 }
 
 func main() {

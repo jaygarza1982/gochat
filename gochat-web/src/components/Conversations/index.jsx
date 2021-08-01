@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import ConvoEntry from './ConvoEntry';
+import axios from 'axios';
 
 const Conversations = () => {
 
-    const [ names, setNames ] = useState(['John Doe', 'Jane Doe']);
+    const [ names, setNames ] = useState([]);
 
     useEffect(() => {
-        console.log('names', names);
-    });
+        console.log('names: ', names);
+        (async () => {
+            const conversations = await axios.get('/api/conversations');
+
+            setNames(conversations?.data || []);
+        })();
+    }, []);
 
     return (
         <>
