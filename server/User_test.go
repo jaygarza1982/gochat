@@ -99,6 +99,10 @@ func TestUser_SendMessage(t *testing.T) {
 	faker.FakeData(&user0)
 	user1 := User{}
 	faker.FakeData(&user1)
+	user2 := User{}
+	faker.FakeData(&user2)
+	user3 := User{}
+	faker.FakeData(&user3)
 
 	if err := user0.Register(db, "12345"); err != nil {
 		t.Errorf("got error when login and should not have %v", err.Error())
@@ -118,8 +122,24 @@ func TestUser_SendMessage(t *testing.T) {
 		t.Errorf("user could not read messages")
 	}
 
-	// TODO: Add more users with more messages
-	// TODO: Ensure messages do not "leak" when other users request their own messages
+	// Other users have a conversation
+	// Send a message to user 2 from user 3
+	userMessage2 := UserMessage{ReceiverId: user2.Username, MessageText: "Message to user 2"}
+	user3.SendMessage(db, &userMessage2, nil)
+
+	// User 2 reads messages
+	user2Messages := user2.ReadMessages(db, user3.Username)
+
+	if (*user2Messages)[0].MessageText != userMessage2.MessageText {
+		t.Errorf("user 3 could not read messages")
+	}
+
+	// Ensure other users cannot see other messages
+	user1NewMessages := user1.ReadMessages(db, user3.Username)
+
+	if len(*user1NewMessages) != 0 {
+		t.Errorf("possible message leak: user1 has messages from user3")
+	}
 }
 
 // TODO: Make test with different users and different conversations
