@@ -176,6 +176,10 @@ func setupRoutes(db *gorm.DB) {
 	http.HandleFunc("/api/login", login(db))
 	http.HandleFunc("/api/register", register(db))
 	http.HandleFunc("/api/send-message", SendMessage(db))
+	// TODO: Will list messages from a specified user and list messages to a specified user where username is user logged in
+	// Example: User A -> message0. User B -> message1. If user A is logged in, it will return message0 and message1
+	// Since this is all part of the conversation between the two users
+	// http.HandleFunc("/api/list-messages", ListMessages(db))
 	http.HandleFunc("/api/conversations", ListConversations(db))
 }
 
