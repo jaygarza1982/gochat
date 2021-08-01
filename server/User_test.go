@@ -142,23 +142,28 @@ func TestUser_SendMessage(t *testing.T) {
 	}
 }
 
-// TODO: Make test with different users and different conversations
-// Ensure that conversations do not "leak" to other users
+// TODO: Ensure that conversations do not "leak" to other users
 // In other words, ensure that conversations are only listed if the user has messages addressed to them
 // from a specific user
 func TestUser_GetConversations(t *testing.T) {
 	db := resetDBConnection(t)
 
 	// Fake a user and password
-	user0 := User{}
-	faker.FakeData(&user0)
-	user1 := User{}
-	faker.FakeData(&user1)
+	user0 := User{Username: "user0"}
+	user1 := User{Username: "user1"}
+	user2 := User{Username: "user2"}
+	user3 := User{Username: "user3"}
 
 	if err := user0.Register(db, "12345"); err != nil {
 		t.Errorf("got error when login and should not have %v", err.Error())
 	}
 	if err := user1.Register(db, "54321"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user2.Register(db, "123user2"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user3.Register(db, "123user3"); err != nil {
 		t.Errorf("got error when login and should not have %v", err.Error())
 	}
 
@@ -170,5 +175,31 @@ func TestUser_GetConversations(t *testing.T) {
 
 	if conversations[0] != user0.Username {
 		t.Errorf("got error when getting conversations should have %v", user0.Username)
+	}
+
+	// Send another message to user 1 from a different user
+	user1NewMessage := UserMessage{ReceiverId: user1.Username, MessageText: "Message from user 2"}
+	user2.SendMessage(db, &user1NewMessage, nil)
+
+	// Get new conversations
+	conversations = user1.GetConversations(db)
+
+	if conversations[0] != user0.Username {
+		t.Errorf("got error when getting conversations should have %v", user0.Username)
+	}
+	if conversations[1] != user2.Username {
+		t.Errorf("got error when getting conversations should have %v", user2.Username)
+	}
+
+	// Send user 3 a message from user 2
+	user2MessageFromUser3 := UserMessage{ReceiverId: user3.Username, MessageText: "Message from user 2"}
+	user2.SendMessage(db, &user2MessageFromUser3, nil)
+
+	user3Conversations := user3.GetConversations(db)
+	if len(user3Conversations) != 1 {
+		t.Errorf("user 3 conversations was invalid length, should have %v", 1)
+	}
+	if user3Conversations[0] != user2.Username {
+		t.Errorf("got error when getting conversations should have %v", user2.Username)
 	}
 }
