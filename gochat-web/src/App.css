@@ -3,7 +3,6 @@
 }
 
 body {
-  /* background-color: #303633; */
   background-color: #282a2d;
   color: #000;
 }
@@ -25,8 +24,6 @@ body {
 }
 
 .chat {
-  display: flex;
-  flex-direction: column;
   color: white;
   padding: 10px;
   margin-bottom: 60px;
@@ -34,8 +31,6 @@ body {
 
 .messages {
   margin-top: 30px;
-  display: flex;
-  flex-direction: column;
 }
 
 .message {
@@ -45,74 +40,14 @@ body {
   padding: 8px 15px;
   margin-top: 5px;
   margin-bottom: 5px;
-  display: inline-block;
 }
 
-.yours {
-  align-items: flex-start;
-}
-
-.yours .message {
-  margin-right: 25%;
+.yours  {
+  margin-right: auto;
   background-color: #333538;
-  position: relative;
 }
 
-.yours .message.last:before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  bottom: 0;
-  left: -7px;
-  height: 20px;
-  width: 20px;
-  background: #EEE;
-  border-bottom-right-radius: 15px;
-}
-.yours .message.last:after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  left: -10px;
-  width: 10px;
-  height: 20px;
-  background: white;
-  border-bottom-right-radius: 10px;
-}
-
-.mine {
-  align-items: flex-end;
-}
-
-.mine .message {
-  color: white;
-  margin-left: 25%;
-  /* background: rgb(0, 120, 254); */
+.mine  {
+  margin-left: auto;
   background: #202224;
-  position: relative;
-}
-
-.mine .message.last:before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  bottom: 0;
-  right: -8px;
-  height: 20px;
-  width: 20px;
-  background: rgb(0, 120, 254);
-  border-bottom-left-radius: 15px;
-}
-
-.mine .message.last:after {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  right: -10px;
-  width: 10px;
-  height: 20px;
-  background: white;
-  border-bottom-left-radius: 10px;
 }

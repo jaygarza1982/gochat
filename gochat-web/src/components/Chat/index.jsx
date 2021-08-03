@@ -9,14 +9,15 @@ const Chat = () => {
     const { socket, setSocket } = useContext(WebSocketContext);
 
     const [receiver, setReceiver] = useState(useParams()?.user);
-    const [yourMessages, setYourMessages] = useState([]);
-    const [myMessages, setMyMessages] = useState([]);
+    const [messages, setMessages] = useState([]);
 
     const handleKeyDown = event => {
-        //TODO: Append to myMessages
         if (event.key === 'Enter' && event.target.value != '') {
-            axios.post('/api/send-message', {ReceiverId: receiver || '', MessageText: event.target.value}).then(resp => {
+            const postData = { ReceiverId: receiver || '', MessageText: event.target.value };
+            axios.post('/api/send-message', postData).then(resp => {
                 console.log('Message sent successfully!');
+
+                setMessages([...messages, JSON.stringify(postData)]);
 
                 event.target.value = '';
             }).catch(err => {
@@ -26,10 +27,8 @@ const Chat = () => {
     }
 
     const onMessage = event => {
-        const { SenderId } = JSON.parse(event.data);
-        
-        //TODO: Only append to their messages
-        SenderId == receiver ? setMyMessages([...myMessages, event.data]) : setYourMessages([...yourMessages, event.data]);
+        setMessages([...messages, event.data]);
+        console.log(event.data, messages);
     }
 
     // When our socket is set, setup functions
@@ -39,32 +38,33 @@ const Chat = () => {
         console.log('Setting up socket message handler');
     
         socket.onmessage = onMessage;
-    }, [socket, yourMessages, myMessages]);
+    }, [socket, messages]);
 
     useEffect(() => {
         //Setup our socket on load
         setSocket(new WebSocket(`ws://${window.location.hostname}:3000/ws`));
+
+        //Load messages
+        (async () => {
+            try {
+                const messagesFetch = await axios.post('/api/list-messages', { username: receiver });
+                const messagesData = messagesFetch.data;
+
+                setMessages(messagesData.map(m => JSON.stringify(m)));
+            } catch (err) {
+                console.log('Unable to load messages', err);
+            }
+        })();
     }, []);
 
     return (
         <>
             <div className="chat">
-                <div className="messages yours">
+                <div className="messages">
                     {
-                        yourMessages.map((message, index) => {
+                        messages.map((message, index) => {
                             return (
-                                <div className="message" key={`${index}-your`}>
-                                    {JSON.parse(message)?.MessageText}
-                                </div>
-                            )
-                        })
-                    }
-                </div>
-                <div className="messages mine">
-                    {
-                        myMessages.map((message, index) => {
-                            return (
-                                <div className="message" key={`${index}-mine`}>
+                                <div className={`message ${JSON.parse(message)?.SenderId == receiver ? 'yours' : 'mine'}`} key={`${index}-message`}>
                                     {JSON.parse(message)?.MessageText}
                                 </div>
                             )

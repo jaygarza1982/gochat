@@ -117,7 +117,6 @@ func ListConversations(db *gorm.DB) func(w http.ResponseWriter, r *http.Request)
 
 		// Check if username is in our session
 		if val, ok := session.Values["username"]; ok {
-			fmt.Printf("Username %v is sending a message\n", val)
 			username = fmt.Sprintf("%v", val)
 		} else {
 			w.WriteHeader(http.StatusForbidden)
@@ -128,6 +127,43 @@ func ListConversations(db *gorm.DB) func(w http.ResponseWriter, r *http.Request)
 		conversations := user.GetConversations(db)
 
 		if bytes, err := json.Marshal(conversations); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Error in registration."))
+		} else {
+			w.Write(bytes)
+		}
+	}
+}
+
+func ListMessages(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "auth")
+		username := ""
+
+		// Check if username is in our session
+		if val, ok := session.Values["username"]; ok {
+			username = fmt.Sprintf("%v", val)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("401 - User session was not found. Please login first."))
+		}
+
+		// Get messages request
+		type MessageRequest struct {
+			Username string `json:"username"`
+		}
+
+		var request MessageRequest
+
+		data := json.NewDecoder(r.Body)
+		data.Decode(&request)
+
+		// Read current users messages from the requested user
+		user := User{Username: username}
+		messages := user.ReadMessages(db, request.Username)
+
+		// Send messages data
+		if bytes, err := json.Marshal(messages); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("500 - Error in registration."))
 		} else {
@@ -164,6 +200,8 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
+			fmt.Printf("Sending message to %v\n", message.ReceiverId)
+
 			// Send our message over the socket
 			socketsSet[message.ReceiverId].Conn.WriteJSON(message)
 		})
@@ -179,7 +217,7 @@ func setupRoutes(db *gorm.DB) {
 	// TODO: Will list messages from a specified user and list messages to a specified user where username is user logged in
 	// Example: User A -> message0. User B -> message1. If user A is logged in, it will return message0 and message1
 	// Since this is all part of the conversation between the two users
-	// http.HandleFunc("/api/list-messages", ListMessages(db))
+	http.HandleFunc("/api/list-messages", ListMessages(db))
 	http.HandleFunc("/api/conversations", ListConversations(db))
 }
 

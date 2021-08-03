@@ -122,6 +122,13 @@ func TestUser_SendMessage(t *testing.T) {
 		t.Errorf("user could not read messages")
 	}
 
+	// User 0 reads message they just sent
+	user0Messages := user0.ReadMessages(db, user1.Username)
+
+	if (*user0Messages)[0].MessageText != userMessage.MessageText {
+		t.Errorf("user could not read messages")
+	}
+
 	// Other users have a conversation
 	// Send a message to user 2 from user 3
 	userMessage2 := UserMessage{ReceiverId: user2.Username, MessageText: "Message to user 2"}

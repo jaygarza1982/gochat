@@ -69,7 +69,10 @@ func (u *User) SendMessage(db *gorm.DB, message *UserMessage, callback func()) {
 
 func (u *User) ReadMessages(db *gorm.DB, senderId string) *[]UserMessage {
 	userMessages := []UserMessage{}
-	db.Where("receiver_id = ? AND sender_id = ?", u.Username, senderId).Find(&userMessages)
+
+	// Read messages addressed to current user
+	// Read messages addressed to other from the current user
+	db.Where("(receiver_id = ? AND sender_id = ?) OR (sender_id = ? AND receiver_id = ?)", u.Username, senderId, u.Username, senderId).Find(&userMessages)
 
 	return &userMessages
 }
