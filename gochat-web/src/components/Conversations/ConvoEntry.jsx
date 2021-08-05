@@ -1,12 +1,18 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 
-const ConvoEntry = ({name}) => {
+const ConvoEntry = props => {
+
+    const navigateToChat = () => {
+        props.history.push(`/chat/${props.name}`);
+    }
+
     return (
-        <tr>
+        <tr onClick={navigateToChat}>
             <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
                     <div className="ml-4">
-                        {name}
+                        {props.name}
                     </div>
                 </div>
             </td>
@@ -14,4 +20,4 @@ const ConvoEntry = ({name}) => {
     );
 }
 
-export default ConvoEntry;
+export default withRouter(ConvoEntry);

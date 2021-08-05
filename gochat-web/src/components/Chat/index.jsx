@@ -31,6 +31,8 @@ const Chat = () => {
         console.log(event.data, messages);
     }
 
+    // TODO: disconnect when umount
+
     // When our socket is set, setup functions
     useEffect(() => {
         if (!socket) return;

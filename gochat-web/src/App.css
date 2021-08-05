@@ -11,16 +11,9 @@ body {
   background-color: #303633;
 }
 
-.primary-message-color {
-  background-color: #54c3bd;
-}
-
-.secondary-message-color {
-  background-color: #d8cd9e;
-}
-
-.danger-color {
-  background-color: #D7263D;
+.login-paper {
+  max-width: 500px;
+  width: 100%;
 }
 
 .chat {
@@ -30,13 +23,15 @@ body {
 }
 
 .messages {
+  text-align: left;
   margin-top: 30px;
 }
 
 .message {
   border-radius: 20px;
-  max-width: 50%;
-  word-break: break-all;
+  max-width: 75%;
+  width: fit-content;
+  word-break: break-word;
   padding: 8px 15px;
   margin-top: 5px;
   margin-bottom: 5px;
