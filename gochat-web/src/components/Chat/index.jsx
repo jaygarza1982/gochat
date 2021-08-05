@@ -44,7 +44,9 @@ const Chat = () => {
 
     useEffect(() => {
         //Setup our socket on load
-        setSocket(new WebSocket(`ws://${window.location.hostname}:3000/ws`));
+        const webSocketURL = `wss://${window.location.host}/ws`;
+        console.log('Setting up websocket at', webSocketURL)
+        setSocket(new WebSocket(webSocketURL));
 
         //Load messages
         (async () => {
