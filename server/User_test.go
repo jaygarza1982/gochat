@@ -160,6 +160,8 @@ func TestUser_GetConversations(t *testing.T) {
 	user1 := User{Username: "user1"}
 	user2 := User{Username: "user2"}
 	user3 := User{Username: "user3"}
+	user4 := User{Username: "user4"}
+	user5 := User{Username: "user5"}
 
 	if err := user0.Register(db, "12345"); err != nil {
 		t.Errorf("got error when login and should not have %v", err.Error())
@@ -171,6 +173,12 @@ func TestUser_GetConversations(t *testing.T) {
 		t.Errorf("got error when login and should not have %v", err.Error())
 	}
 	if err := user3.Register(db, "123user3"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user4.Register(db, "123user3"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user5.Register(db, "123user3"); err != nil {
 		t.Errorf("got error when login and should not have %v", err.Error())
 	}
 
@@ -208,5 +216,15 @@ func TestUser_GetConversations(t *testing.T) {
 	}
 	if user3Conversations[0] != user2.Username {
 		t.Errorf("got error when getting conversations should have %v", user2.Username)
+	}
+
+	// Send message to user 1
+	user4To5Message := UserMessage{ReceiverId: user5.Username}
+	user4.SendMessage(db, &user4To5Message, nil)
+
+	// User 4 lists conversations, ensure that we have user 5 in our conversations
+	user4Conversations := user4.GetConversations(db)
+	if user4Conversations[0] != user5.Username {
+		t.Errorf("user 4 did not have user 5 in conversations")
 	}
 }

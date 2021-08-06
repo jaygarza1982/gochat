@@ -14,3 +14,8 @@ services:
         image: postgres:13.3-alpine
         volumes: 
             - ./postgres-test:/var/lib/postgresql/data
+
+    web-server:
+        build: 
+            context: ./gochat-web
+        command: ["echo", "done"]

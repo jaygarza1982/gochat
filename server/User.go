@@ -82,7 +82,8 @@ func (u *User) GetConversations(db *gorm.DB) []string {
 	var usernames []string
 
 	// Get distinct chats where receiver is ours
-	rows, rowError := db.Raw("SELECT DISTINCT sender_id FROM user_messages WHERE receiver_id = ?", u.Username).Rows()
+	// And where the sender is us
+	rows, rowError := db.Raw("SELECT DISTINCT sender_id FROM user_messages WHERE receiver_id = ? UNION ALL SELECT DISTINCT receiver_id FROM user_messages WHERE sender_id = ?", u.Username, u.Username).Rows()
 
 	if rowError != nil {
 		fmt.Printf("Error %v", rowError)
