@@ -189,7 +189,7 @@ func TestUser_GetConversations(t *testing.T) {
 	conversations := user1.GetConversations(db)
 
 	if conversations[0] != user0.Username {
-		t.Errorf("got error when getting conversations should have %v", user0.Username)
+		t.Errorf("got error when getting user0 conversations should have %v", user0.Username)
 	}
 
 	// Send another message to user 1 from a different user
@@ -199,11 +199,11 @@ func TestUser_GetConversations(t *testing.T) {
 	// Get new conversations
 	conversations = user1.GetConversations(db)
 
-	if conversations[0] != user0.Username {
-		t.Errorf("got error when getting conversations should have %v", user0.Username)
+	if conversations[0] != user2.Username {
+		t.Errorf("got error when getting user1 conversations should have %v", user2.Username)
 	}
-	if conversations[1] != user2.Username {
-		t.Errorf("got error when getting conversations should have %v", user2.Username)
+	if conversations[1] != user0.Username {
+		t.Errorf("got error when getting user1 conversations should have %v", user0.Username)
 	}
 
 	// Send user 3 a message from user 2
@@ -215,7 +215,7 @@ func TestUser_GetConversations(t *testing.T) {
 		t.Errorf("user 3 conversations was invalid length, should have %v", 1)
 	}
 	if user3Conversations[0] != user2.Username {
-		t.Errorf("got error when getting conversations should have %v", user2.Username)
+		t.Errorf("got error when getting user3 conversations should have %v", user2.Username)
 	}
 
 	// Send message to user 1
