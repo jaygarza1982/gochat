@@ -6,6 +6,7 @@ import (
 )
 
 type UserMessage struct {
+	ID          uint `gorm:"primaryKey"`
 	SenderId    string
 	ReceiverId  string
 	MessageText string

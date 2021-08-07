@@ -27,6 +27,16 @@ func resetDBConnection(t *testing.T) *gorm.DB {
 	return db
 }
 
+func arrayContainsString(array *[]string, value string) bool {
+	for _, v := range *array {
+		if v == value {
+			return true
+		}
+	}
+
+	return false
+}
+
 func TestUser_Create(t *testing.T) {
 	db := resetDBConnection(t)
 
@@ -199,11 +209,11 @@ func TestUser_GetConversations(t *testing.T) {
 	// Get new conversations
 	conversations = user1.GetConversations(db)
 
-	if conversations[0] != user2.Username {
-		t.Errorf("got error when getting user1 conversations should have %v", user2.Username)
-	}
-	if conversations[1] != user0.Username {
+	if !arrayContainsString(&conversations, user0.Username) {
 		t.Errorf("got error when getting user1 conversations should have %v", user0.Username)
+	}
+	if !arrayContainsString(&conversations, user2.Username) {
+		t.Errorf("got error when getting user1 conversations should have %v", user2.Username)
 	}
 
 	// Send user 3 a message from user 2

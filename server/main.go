@@ -192,7 +192,7 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 		data.Decode(&message)
 
 		user := User{Username: username}
-		user.SendMessage(db, &message, func() {
+		user.SendMessage(db, &message, func(sentMessage *UserMessage) {
 			// Ensure the socket exists
 			if _, ok := socketsSet[message.ReceiverId]; !ok {
 				fmt.Printf("Receiver %v not found within sockets\n", message.ReceiverId)
@@ -202,8 +202,10 @@ func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Printf("Sending message to %v\n", message.ReceiverId)
 
-			// Send our message over the socket
-			socketsSet[message.ReceiverId].Conn.WriteJSON(message)
+			// Send our message ID over the socket
+			// The receiver will later query this to find the message text
+			// This is because I have not yet found a way to proxy WSS
+			socketsSet[message.ReceiverId].Conn.WriteJSON(sentMessage.ID)
 		})
 	}
 }

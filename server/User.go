@@ -55,7 +55,7 @@ func (u *User) Register(db *gorm.DB, password string) error {
 
 // Sends a message to another user
 // The message contains who it is to
-func (u *User) SendMessage(db *gorm.DB, message *UserMessage, callback func()) {
+func (u *User) SendMessage(db *gorm.DB, message *UserMessage, callback func(message *UserMessage)) {
 	// Ensure that the message is from us
 	message.SenderId = u.Username
 
@@ -63,7 +63,7 @@ func (u *User) SendMessage(db *gorm.DB, message *UserMessage, callback func()) {
 
 	// Run our optional callback, this could be sending message over a websocket if desired
 	if callback != nil {
-		callback()
+		callback(message)
 	}
 }
 
