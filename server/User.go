@@ -77,6 +77,14 @@ func (u *User) ReadMessages(db *gorm.DB, senderId string) *[]UserMessage {
 	return &userMessages
 }
 
+func (u *User) GetMessage(db *gorm.DB, id uint) *UserMessage {
+	message := UserMessage{}
+
+	db.Where("receiver_id = ? AND id = ?", u.Username, id).Find(&message)
+
+	return &message
+}
+
 // Return all messages that have receiver as the current user
 func (u *User) GetConversations(db *gorm.DB) []string {
 	var usernames []string

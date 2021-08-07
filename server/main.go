@@ -172,6 +172,43 @@ func ListMessages(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func GetMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		session, _ := store.Get(r, "auth")
+		username := ""
+
+		// Check if username is in our session
+		if val, ok := session.Values["username"]; ok {
+			username = fmt.Sprintf("%v", val)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("401 - User session was not found. Please login first."))
+		}
+
+		// Get messages request
+		type MessageRequest struct {
+			ID uint `json:"id"`
+		}
+
+		var request MessageRequest
+
+		data := json.NewDecoder(r.Body)
+		data.Decode(&request)
+
+		// Read current users messages from the requested user
+		user := User{Username: username}
+		messages := user.GetMessage(db, request.ID)
+
+		// Send messages data
+		if bytes, err := json.Marshal(messages); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Error in registration."))
+		} else {
+			w.Write(bytes)
+		}
+	}
+}
+
 func SendMessage(db *gorm.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session, _ := store.Get(r, "auth")
@@ -220,6 +257,7 @@ func setupRoutes(db *gorm.DB) {
 	// Example: User A -> message0. User B -> message1. If user A is logged in, it will return message0 and message1
 	// Since this is all part of the conversation between the two users
 	http.HandleFunc("/api/list-messages", ListMessages(db))
+	http.HandleFunc("/api/get-message", GetMessage(db))
 	http.HandleFunc("/api/conversations", ListConversations(db))
 }
 

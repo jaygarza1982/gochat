@@ -238,3 +238,33 @@ func TestUser_GetConversations(t *testing.T) {
 		t.Errorf("user 4 did not have user 5 in conversations")
 	}
 }
+
+func TestUser_GetMessage(t *testing.T) {
+	db := resetDBConnection(t)
+
+	// Fake a user and password
+	user0 := User{Username: "user0"}
+	user1 := User{Username: "user1"}
+
+	if err := user0.Register(db, "12345"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+	if err := user1.Register(db, "54321"); err != nil {
+		t.Errorf("got error when login and should not have %v", err.Error())
+	}
+
+	// Send message to user 1
+	messageText := "Message to user 1 for get message test"
+	userMessage := UserMessage{ReceiverId: user1.Username, MessageText: messageText}
+
+	var messageId uint
+	user0.SendMessage(db, &userMessage, func(sentMessage *UserMessage) {
+		messageId = sentMessage.ID
+	})
+
+	messageGot := user1.GetMessage(db, messageId)
+
+	if messageGot.MessageText != messageText {
+		t.Errorf("message text got should have been %v got %v", messageText, messageGot.MessageText)
+	}
+}

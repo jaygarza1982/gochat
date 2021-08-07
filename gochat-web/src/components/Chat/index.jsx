@@ -11,6 +11,10 @@ const Chat = () => {
     const [receiver, setReceiver] = useState(useParams()?.user);
     const [messages, setMessages] = useState([]);
 
+    const scrollToBottom = () => {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
     const handleKeyDown = event => {
         if (event.key === 'Enter' && event.target.value != '') {
             const postData = { ReceiverId: receiver || '', MessageText: event.target.value };
@@ -27,8 +31,19 @@ const Chat = () => {
     }
 
     const onMessage = event => {
-        setMessages([...messages, event.data]);
-        console.log(event.data, messages);
+        // Get message ID and request message from API
+        (async () => {
+            try {
+                const message = await axios.post('/api/get-message', { id: parseInt(event.data) });
+
+                console.log('message received', message.data);
+                setMessages([...messages, JSON.stringify(message.data)]);
+
+                scrollToBottom();
+            } catch (err) {
+                console.log('Could not get message', err);
+            }
+        })();
     }
 
     // TODO: disconnect when umount
@@ -58,6 +73,8 @@ const Chat = () => {
                 const messagesData = messagesFetch.data;
 
                 setMessages(messagesData.map(m => JSON.stringify(m)));
+
+                scrollToBottom();
             } catch (err) {
                 console.log('Unable to load messages', err);
             }
