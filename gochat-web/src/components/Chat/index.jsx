@@ -58,8 +58,11 @@ const Chat = () => {
     }, [socket, messages]);
 
     useEffect(() => {
+        //Check if we are using http or https
+        const https = window.location.protocol.startsWith('https');
+
         //Setup our socket on load
-        const webSocketURL = `ws://${window.location.host}/ws`;
+        const webSocketURL = `${https ? 'wss' : 'ws'}://${window.location.host}/ws`;
         console.log('Setting up websocket at', webSocketURL)
         setSocket(new WebSocket(webSocketURL));
 
